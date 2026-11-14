@@ -5,80 +5,169 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sistema Fuzzy — Tempo de irrigação</title>
   <link rel="stylesheet" href="css/estilo.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
-  <header class="cabecalho">
-    <p class="disciplina">Inteligência Artificial — UFPI 2026.2</p>
-    <h1>Atividade Prática: Sistema Fuzzy (Mamdani)</h1>
-    <p class="meta">
-      Autores: [Nome Completo], [Nome Completo] ·
-      <a href="https://github.com/enricotx/ia-ufpi-sistema-fuzzy" target="_blank" rel="noopener">Repositório no GitHub</a>
-    </p>
-  </header>
-
-  <main class="layout">
-    <!-- Coluna de configuração -->
-    <section>
-      <div class="painel" id="painel-entradas">
-        <h2>Entradas</h2>
-        <!-- TODO: umidade do solo (0–100 %, inicial 35) e temperatura (10–40 °C, inicial 30), numérico + deslizante -->
+  <!-- ================= Tela inicial ================= -->
+  <section id="abertura">
+    <canvas id="abertura-canvas" aria-hidden="true"></canvas>
+    <div class="capa">
+      <div class="disc">Inteligência Artificial · UFPI 2026.2</div>
+      <h1 class="nome">Sistema Fuzzy</h1>
+      <div class="var">Mamdani · tempo de irrigação do jardim</div>
+      <div class="capa-botoes">
+        <button type="button" id="btn-iniciar" class="pilula cheia">Iniciar</button>
+        <a id="btn-repo-abertura" class="pilula contorno" href="https://github.com/enricotx/ia-ufpi-sistema-fuzzy" target="_blank" rel="noopener">Ver repositório ↗</a>
       </div>
+      <div class="autores">Enrico Teixeira e João Pedro Moura</div>
+    </div>
+  </section>
 
-      <div class="painel" id="painel-regras-config">
-        <h2>Consequentes das regras</h2>
-        <!-- TODO: 9 seletores (curto, médio, longo), iniciando com a base padrão -->
+  <!-- ================= Simulador ================= -->
+  <div id="simulador" hidden>
+    <header class="topo">
+      <div>
+        <p class="titulo">Sistema Fuzzy (Mamdani)</p>
+        <div class="disc">Inteligência Artificial · UFPI 2026.2 · Enrico Teixeira e João Pedro Moura</div>
       </div>
+      <div class="espaco"></div>
+      <span id="status" class="status">Pronto para calcular</span>
+      <div id="anuncio" class="so-leitor" aria-live="polite"></div>
+      <a class="pilula contorno pequena" href="https://github.com/enricotx/ia-ufpi-sistema-fuzzy" target="_blank" rel="noopener">Repositório no GitHub ↗</a>
+    </header>
 
-      <div class="painel" id="painel-passo">
-        <h2>Defuzzificação</h2>
-        <!-- TODO: seletor de Δz: 0,1 / 0,05 / 0,01 minuto (inicial 0,1) -->
-      </div>
-
-      <div class="painel">
-        <div class="controles">
-          <button id="btn-calcular" class="primario" disabled>Calcular</button>
-          <button id="btn-avancar" disabled>Avançar etapa</button>
-          <button id="btn-restaurar" disabled>Restaurar padrão</button>
+    <main class="layout">
+      <!-- Coluna de configuração -->
+      <aside>
+        <div class="painel">
+          <h2>Entradas</h2>
+          <div class="campo" id="campo-umidade">
+            <label for="c-umidade">Umidade do solo (U) <small>0% a 100%</small></label>
+            <div class="linha-entrada">
+              <input type="text" inputmode="decimal" id="c-umidade" autocomplete="off">
+              <span class="un">%</span>
+              <input type="range" id="r-umidade" min="0" max="100" step="1" aria-label="Umidade do solo (deslizante)">
+            </div>
+            <div class="erro" id="erro-umidade"></div>
+          </div>
+          <div class="campo" id="campo-temperatura">
+            <label for="c-temperatura">Temperatura (T) <small>10 °C a 40 °C</small></label>
+            <div class="linha-entrada">
+              <input type="text" inputmode="decimal" id="c-temperatura" autocomplete="off">
+              <span class="un">°C</span>
+              <input type="range" id="r-temperatura" min="10" max="40" step="0.5" aria-label="Temperatura (deslizante)">
+            </div>
+            <div class="erro" id="erro-temperatura"></div>
+          </div>
+          <div class="campo">
+            <label for="c-dz">Passo de defuzzificação (Δz)</label>
+            <select id="c-dz">
+              <option value="0.1">0,1 minuto</option>
+              <option value="0.05">0,05 minuto</option>
+              <option value="0.01">0,01 minuto</option>
+            </select>
+          </div>
         </div>
-      </div>
-    </section>
 
-    <!-- Coluna de resultados -->
-    <section>
-      <div class="status" id="status">Em construção</div>
+        <div class="painel">
+          <h2>Regras</h2>
+          <table class="regras-config">
+            <thead><tr><th></th><th>SE o solo é</th><th>E a temperatura é</th><th>ENTÃO o tempo é</th></tr></thead>
+            <tbody id="regras-config"></tbody>
+          </table>
+          <p class="nota">Os antecedentes são fixos; troque o consequente de cada regra.</p>
+        </div>
 
-      <div class="metricas">
-        <div class="metrica"><div class="rotulo">Etapa</div><div class="valor" id="m-etapa">—</div></div>
-        <div class="metrica"><div class="rotulo">Tempo recomendado</div><div class="valor" id="m-tempo">ainda não calculado</div></div>
-      </div>
+        <div class="painel">
+          <div class="botoes">
+            <button type="button" id="btn-calcular" class="b primario">Calcular</button>
+            <button type="button" id="btn-avancar" class="b">Avançar etapa</button>
+            <button type="button" id="btn-restaurar" class="b">Restaurar padrão</button>
+          </div>
+          <div class="resumo-erros" id="resumo-erros" aria-live="polite"></div>
+        </div>
+      </aside>
 
-      <div class="painel" id="painel-fuzzificacao" style="margin-top:16px">
-        <h2>1. Fuzzificação</h2>
-        <!-- TODO: gráficos de umidade e temperatura, linhas verticais e todos os graus (inclusive zeros) -->
-      </div>
+      <!-- Coluna de resultados -->
+      <section class="resultados" id="resultados">
+        <ol class="etapas" id="etapas">
+          <li data-etapa="1"><b>1</b>Fuzzificação</li>
+          <li data-etapa="2"><b>2</b>Regras</li>
+          <li data-etapa="3"><b>3</b>Implicação</li>
+          <li data-etapa="4"><b>4</b>Agregação</li>
+          <li data-etapa="5"><b>5</b>Defuzzificação</li>
+        </ol>
 
-      <div class="painel" id="painel-regras">
-        <h2>2–3. Regras, ativação e implicação</h2>
-        <!-- TODO: base completa, regras ativadas destacadas, min(·,·) = h(r), recorte da regra selecionada -->
-      </div>
+        <div class="metricas">
+          <div class="metrica"><div class="r">Etapa</div><div class="v" id="m-etapa">0 <small>de 5</small></div></div>
+          <div class="metrica"><div class="r">Regras ativadas</div><div class="v" id="m-regras">—</div></div>
+          <div class="metrica destaque"><div class="r">Tempo recomendado</div><div class="v" id="m-tempo">ainda não calculado</div></div>
+        </div>
 
-      <div class="painel" id="painel-saida">
-        <h2>4–5. Agregação e defuzzificação</h2>
-        <!-- TODO: curto/médio/longo, região agregada (máximo), linha do centroide, tempo com 2 casas -->
-      </div>
+        <div class="painel">
+          <h2><span class="num">1</span>Fuzzificação</h2>
+          <div class="graficos-entrada">
+            <div>
+              <svg class="grafico" id="g-umidade" viewBox="0 0 520 230" role="img" aria-label="Conjuntos de umidade"></svg>
+              <div class="graus" id="graus-umidade"></div>
+            </div>
+            <div>
+              <svg class="grafico" id="g-temperatura" viewBox="0 0 520 230" role="img" aria-label="Conjuntos de temperatura"></svg>
+              <div class="graus" id="graus-temperatura"></div>
+            </div>
+          </div>
+          <p class="nota">Os graus são a compatibilidade da entrada com cada termo linguístico; não são probabilidades e não precisam somar 1.</p>
+        </div>
 
-      <div class="painel" id="painel-logs">
-        <h2>Log das etapas</h2>
-      </div>
-    </section>
-  </main>
+        <div class="painel">
+          <h2><span class="num">2</span>Avaliação das regras <span class="num">3</span>Implicação</h2>
+          <div class="regras-area">
+            <div class="rolagem">
+              <table class="tabela-regras">
+                <thead><tr><th>Regra</th><th>μ solo</th><th>μ temperatura</th><th>h = min</th><th></th><th>Consequente</th></tr></thead>
+                <tbody id="tabela-regras"></tbody>
+              </table>
+              <p class="nota">Clique numa regra para ver o consequente e o recorte da implicação.</p>
+            </div>
+            <div class="lado-regra">
+              <h3 id="titulo-regra">Regra selecionada</h3>
+              <svg class="grafico" id="g-regra" viewBox="0 0 520 230" role="img" aria-label="Consequente da regra e recorte"></svg>
+              <p class="nota" id="texto-regra"></p>
+            </div>
+          </div>
+        </div>
 
-  <footer class="rodape">
-    Código-fonte: <a href="https://github.com/enricotx/ia-ufpi-sistema-fuzzy">github.com/enricotx/ia-ufpi-sistema-fuzzy</a>
-    · <a href="testes.html">Testes de validação</a>
-  </footer>
+        <div class="painel">
+          <h2><span class="num">4</span>Agregação <span class="num">5</span>Defuzzificação</h2>
+          <div class="saida-area">
+            <svg class="grafico" id="g-saida" viewBox="0 0 520 230" role="img" aria-label="Saída agregada e centroide"></svg>
+            <div>
+              <div class="resultado-tempo">
+                <div class="r">Tempo de irrigação (centroide)</div>
+                <div class="v" id="tempo-final">—</div>
+              </div>
+              <div class="conta" id="conta"></div>
+            </div>
+          </div>
+        </div>
 
+        <div class="painel">
+          <h2>Log das etapas</h2>
+          <ol class="log" id="log"><li class="vazio">Clique em Calcular ou Avançar etapa.</li></ol>
+          <div class="copiar">
+            <button type="button" class="pequeno" id="btn-copiar-log">Copiar log</button>
+            <span class="aviso-log" id="aviso-log" aria-live="polite"></span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="rodape">
+      Código-fonte: <a href="https://github.com/enricotx/ia-ufpi-sistema-fuzzy" target="_blank" rel="noopener">github.com/enricotx/ia-ufpi-sistema-fuzzy</a>
+      · <a href="testes.html">Testes de validação</a>
+    </footer>
+  </div>
+
+  <script type="module" src="js/abertura.js"></script>
   <script type="module" src="js/ui.js"></script>
 </body>
 </html>
