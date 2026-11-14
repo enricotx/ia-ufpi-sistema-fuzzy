@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sistema Fuzzy — Tempo de irrigação</title>
+  <link rel="stylesheet" href="css/estilo.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header class="cabecalho">
+    <p class="disciplina">Inteligência Artificial — UFPI 2026.2</p>
+    <h1>Atividade Prática: Sistema Fuzzy (Mamdani)</h1>
+    <p class="meta">
+      Autores: [Nome Completo], [Nome Completo] ·
+      <a href="https://github.com/enricotx/ia-ufpi-sistema-fuzzy" target="_blank" rel="noopener">Repositório no GitHub</a>
+    </p>
+  </header>
+
+  <main class="layout">
+    <!-- Coluna de configuração -->
+    <section>
+      <div class="painel" id="painel-entradas">
+        <h2>Entradas</h2>
+        <!-- TODO: umidade do solo (0–100 %, inicial 35) e temperatura (10–40 °C, inicial 30), numérico + deslizante -->
+      </div>
+
+      <div class="painel" id="painel-regras-config">
+        <h2>Consequentes das regras</h2>
+        <!-- TODO: 9 seletores (curto, médio, longo), iniciando com a base padrão -->
+      </div>
+
+      <div class="painel" id="painel-passo">
+        <h2>Defuzzificação</h2>
+        <!-- TODO: seletor de Δz: 0,1 / 0,05 / 0,01 minuto (inicial 0,1) -->
+      </div>
+
+      <div class="painel">
+        <div class="controles">
+          <button id="btn-calcular" class="primario" disabled>Calcular</button>
+          <button id="btn-avancar" disabled>Avançar etapa</button>
+          <button id="btn-restaurar" disabled>Restaurar padrão</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Coluna de resultados -->
+    <section>
+      <div class="status" id="status">Em construção</div>
+
+      <div class="metricas">
+        <div class="metrica"><div class="rotulo">Etapa</div><div class="valor" id="m-etapa">—</div></div>
+        <div class="metrica"><div class="rotulo">Tempo recomendado</div><div class="valor" id="m-tempo">ainda não calculado</div></div>
+      </div>
+
+      <div class="painel" id="painel-fuzzificacao" style="margin-top:16px">
+        <h2>1. Fuzzificação</h2>
+        <!-- TODO: gráficos de umidade e temperatura, linhas verticais e todos os graus (inclusive zeros) -->
+      </div>
+
+      <div class="painel" id="painel-regras">
+        <h2>2–3. Regras, ativação e implicação</h2>
+        <!-- TODO: base completa, regras ativadas destacadas, min(·,·) = h(r), recorte da regra selecionada -->
+      </div>
+
+      <div class="painel" id="painel-saida">
+        <h2>4–5. Agregação e defuzzificação</h2>
+        <!-- TODO: curto/médio/longo, região agregada (máximo), linha do centroide, tempo com 2 casas -->
+      </div>
+
+      <div class="painel" id="painel-logs">
+        <h2>Log das etapas</h2>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    Código-fonte: <a href="https://github.com/enricotx/ia-ufpi-sistema-fuzzy">github.com/enricotx/ia-ufpi-sistema-fuzzy</a>
+    · <a href="testes.html">Testes de validação</a>
+  </footer>
+
+  <script type="module" src="js/ui.js"></script>
+</body>
+</html>
